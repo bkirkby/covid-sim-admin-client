@@ -1,24 +1,27 @@
-import React from 'react';
-import logo from './logo.svg';
+import React, {useEffect} from 'react';
+import { BrowserRouter as Router, Route } from 'react-router-dom';
 import './App.css';
+import Login from './component/Login';
+import ReportList from './component/ReportList';
 
 function App() {
+
+  console.log('bk: App.js: process.env: ', process.env);
+  useEffect(()=>{
+    // axios.post(`${process.env.REACT_APP_SERVER_API}/getGraph`, {
+    //   isolation: 77,
+    //   social_distance: 6.6,
+    //   population: 100
+    // }).then(res => console.log('bk: App.js: api.post: res: ', res))
+    // .catch(err => console.error('error getting graph data: ', err))
+  }, []);
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <Router>
+        <Route path="/report-list" component={ReportList} />
+        <Route path="/login" component={Login} />
+        <Route exact path="/" component={Login} />
+      </Router>
     </div>
   );
 }
