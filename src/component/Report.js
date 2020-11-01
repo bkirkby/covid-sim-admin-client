@@ -1,66 +1,104 @@
-import React, { useEffect, useState } from 'react';
-import { Line } from 'react-chartjs-2';
-import { getGraphData } from '../api';
+// @ts-ignore
+import React, { useEffect } from 'react';
+import styled from 'styled-components';
+import { useTable } from 'react-table';
+import { CovidSecondReport } from '../api/reporting';
 
-const Report = ({graph}) => {
-  const [ graphData, setGraphData ] = useState({
-    dead_array: [], healthy_array: [], infected_array: [], immune_array: []
-  });
+const Styles = styled.div`
+  padding: 1rem;
 
-  useEffect(() => {
-    getGraphData(graph)
-      .then(graph_data => setGraphData(graph_data))
-  }, [graph]);
+  table {
+    border-spacing: 0;
+    border: 1px solid black;
 
-  return <>
-    {graph.social_distance}
-    { graphData.healthy_array.length > 0 ?
-      <div style={{height: 400, width: 800}}>
-      <Line
-          data={{
-            // labels: ["one","two","three","four","five","six","seven"],
-            labels: graphData.healthy_array.map((h, idx) => parseInt(idx, 10)),
-            datasets: [
-              {
-                label: "normal",
-                barPercentage: 0.5,
-                barThickness: 6,
-                maxBarThickness: 8,
-                minBarLength: 2,
-                borderColor: "blue",
-                backgroundColor:"rgb(102, 102, 155, .6)",
-                data: graphData.healthy_array.map(cnt => (cnt/graphData.total_runs).toFixed(1))
-              },
-              {
-                label: "infected",
-                barPercentage: 0.5,
-                barThickness: 6,
-                maxBarThickness: 8,
-                minBarLength: 2,
-                borderColor: "red",
-                backgroundColor:"rgb(155, 102, 102, .6)",
-                data: graphData.infected_array.map(cnt => (cnt/graphData.total_runs).toFixed(1))
-              },
-              {
-                label: "immune",
-                barPercentage: 0.5,
-                barThickness: 6,
-                maxBarThickness: 8,
-                minBarLength: 2,
-                borderColor: "green",
-                backgroundColor:"rgb(155, 102, 102, .6)",
-                data: graphData.immune_array.map(cnt => (cnt/graphData.total_runs).toFixed())
-              }
-            ]
-          }}
-          // width={800}
-          // height={400}
-          // options={{ maintainAspectRatio: false }}
-        /> 
-        </div>
-      : <div>no graph data</div>
+    tr {
+      :last-child {
+        td {
+          border-bottom: 0;
+        }
+      }
     }
-  </>
-}
+
+    th,
+    td {
+      margin: 0;
+      padding: 0.5rem;
+      border-bottom: 1px solid black;
+      border-right: 1px solid black;
+
+      :last-child {
+        border-right: 0;
+      }
+    }
+  }
+`
+
+const Report = ({ report }) => {
+  const timePrefix = report instanceof CovidSecondReport ? 'sec' : 'ms';
+  const columns = [
+    {
+      Header: `Time (${timePrefix})`,
+      accessor: 'time'
+    },
+    {
+      Header: 'Num Healthy',
+      accessor: 'numHealthy'
+    },
+    {
+      Header: 'Num Infected',
+      accessor: 'numInfected',
+    },
+    {
+      Header: 'Num Immune',
+      accessor: 'numImmune'
+    }
+  ];
+
+  const getFormattedData = () => {
+    try {
+      return report.formattedData
+    } catch (e) {
+      if (e instanceof TypeError) {
+        console.error(`${e.message}`);
+        alert(`${e.message}`);
+      }
+    }
+  }
+
+  const {
+    getTableProps,
+    headerGroups,
+    getTableBodyProps,
+    rows,
+    prepareRow
+  } = useTable({ columns, data: getFormattedData() });
+
+  return (
+    <Styles>
+      <div style={{ fontWeight: 'bold', fontSize: 'x-large' }}>{report.title}</div>
+      <div style={{ fontSize: 'xx-small' }}>{report.date.toString()}</div>
+      <table {...getTableProps()}>
+        <thead>
+          {headerGroups.map(hg => {
+            return <tr {...hg.getHeaderGroupProps()}>
+              {hg.headers.map(column => {
+                return <th {...column.getHeaderProps()}>{column.render('Header')}</th>
+              })}
+            </tr>
+          })}
+        </thead>
+        <tbody {...getTableBodyProps()}>
+          {rows.map(row => {
+            prepareRow(row);
+            return <tr {...row.getRowProps()}>
+              {row.cells.map(cell => {
+                return <td {...cell.getCellProps()}>{cell.render('Cell')}</td>
+              })}
+            </tr>
+          })}
+        </tbody>
+      </table>
+    </Styles>)
+};
 
 export default Report;

@@ -2,7 +2,7 @@ import React, {useEffect} from 'react';
 import { BrowserRouter as Router, Route } from 'react-router-dom';
 import './App.css';
 import Login from './component/Login';
-import ReportList from './component/ReportList';
+import ReportList from './component/GraphList';
 
 function App() {
 
@@ -18,7 +18,7 @@ function App() {
   return (
     <div className="App">
       <Router>
-        <Route path="/report-list" component={ReportList} />
+        <Route path="/graph-list" component={ReportList} />
         <Route path="/login" component={Login} />
         <Route exact path="/" component={Login} />
       </Router>
